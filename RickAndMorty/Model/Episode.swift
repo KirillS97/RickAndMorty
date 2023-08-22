@@ -1,56 +1,16 @@
 //
-//  Model.swift
+//  Episode.swift
 //  RickAndMorty
 //
-//  Created by Kirill on 18.08.2023.
+//  Created by Kirill on 22.08.2023.
 //
 
 import Foundation
-
-
-
-struct Origin: Decodable {
-    let name: String
-    let url: String
-}
-
-struct Location: Decodable {
-    let name: String
-    let url: String
-}
-
-struct Character: Decodable {
-    let id: Int
-    let name: String
-    let status: String
-    let species: String
-    let type: String
-    let gender: String
-    let origin: Origin
-    let location: Location
-    let image: String
-    let episode: [String]
-    let url: String
-    let created: String
-}
-
-struct Info: Decodable {
-    let count: Int
-    let pages: Int
-    let next: String?
-    let prev: String?
-}
-
-struct AnswerFromServer: Decodable {
-    let info: Info
-    let results: [Character]
-}
 
 struct Episode: Decodable {
     let name: String
     let air_date: String
     let episode: String
-    
 }
 
 extension Episode {

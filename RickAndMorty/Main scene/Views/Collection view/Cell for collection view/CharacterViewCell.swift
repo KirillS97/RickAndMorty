@@ -13,10 +13,14 @@ class CharacterViewCell: UICollectionViewCell {
     static let reuseId = "CharacterViewCell"
     
     // MARK: Свойства объектов класса
-    private var avatarImageView  : UIImageView!
+    var avatarImageView  : UIImageView!
     private var activityIndicator: UIActivityIndicatorView!
     private var nameLabel        : UILabel!
     private var verticalStack    : UIStackView!
+    
+    private let imageCache              = ImageCache.shared
+    private let networkManager          = NetworkManager.shared
+    private var dataTaskForImageDownload: URLSessionDataTask?
     
     // MARK: Инициализаторы
     override init(frame: CGRect) {
@@ -31,6 +35,10 @@ class CharacterViewCell: UICollectionViewCell {
     // MARK: Подготовка к повторному использованию
     override func prepareForReuse() {
         super.prepareForReuse()
+        if let dataTaskForImageDownload {
+            dataTaskForImageDownload.cancel()
+            self.dataTaskForImageDownload = nil
+        }
         self.avatarImageView.image = nil
         self.nameLabel.text = nil
         self.activityIndicator.startAnimating()
@@ -49,18 +57,36 @@ class CharacterViewCell: UICollectionViewCell {
 
 
 
-// MARK: - Интерфейс ячейки
+// MARK: - Интерфейс и конфигурирование ячейки
 extension CharacterViewCell {
     
-    func setUpAvatar(image: UIImage?) -> Void {
-        self.avatarImageView.image = image
+    func configure(characterName: String, imageUrl: URL?) -> Void {
+        self.setUpName(name: characterName)
+        self.setUpAvatar(url: imageUrl)
     }
     
-    func setUpName(name: String) -> Void {
+    private func setUpAvatar(url: URL?) -> Void {
+        
+        if let cachedImage = self.imageCache.fetchImage(url: url) {
+            self.avatarImageView.image = cachedImage
+            self.stopActivityIndicator()
+        } else {
+            self.networkManager.fetchImage(url: url, task: &self.dataTaskForImageDownload) { image in
+                if let image {
+                    self.avatarImageView.image = image
+                    self.stopActivityIndicator()
+                    self.imageCache.saveImage(url: url, image: image)
+                }
+            }
+        }
+        
+    }
+    
+    private func setUpName(name: String) -> Void {
         self.nameLabel.text = name
     }
     
-    func stopActivityIndicator() -> Void {
+    private func stopActivityIndicator() -> Void {
         self.activityIndicator.stopAnimating()
     }
     
@@ -82,7 +108,6 @@ extension CharacterViewCell {
     private func addConstraintsToAvatarImageView() -> Void {
         self.avatarImageView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            self.avatarImageView.widthAnchor.constraint(equalToConstant: 140),
             self.avatarImageView.heightAnchor.constraint(equalTo: self.avatarImageView.widthAnchor, multiplier: 1)
         ])
     }
@@ -105,7 +130,7 @@ extension CharacterViewCell {
         self.verticalStack.spacing = 16
         self.verticalStack.alignment = .center
         self.verticalStack.layer.cornerRadius = 16
-        self.verticalStack.backgroundColor = UIColor(red: (38/255), green: (42/255), blue: (56/255), alpha: 1)
+        self.verticalStack.backgroundColor = AppColors.cellsColor.getColor()
         self.verticalStack.addArrangedSubview(self.avatarImageView)
         self.verticalStack.addArrangedSubview(self.nameLabel)
         self.addConstraintsToVerticalStack()

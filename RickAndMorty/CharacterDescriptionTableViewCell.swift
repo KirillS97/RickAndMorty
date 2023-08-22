@@ -21,6 +21,10 @@ class CharacterDescriptionTableViewCell: UITableViewCell {
     private var characterStateLabel: UILabel!
     private var activityIndicator  : UIActivityIndicatorView!
     
+    private let imageCache              = ImageCache.shared
+    private let networkManager          = NetworkManager.shared
+    private var dataTaskForImageDownload: URLSessionDataTask?
+    
     // MARK: Инициализаторы
     init() {
         super.init(style: .default, reuseIdentifier: CharacterDescriptionTableViewCell.reuseId)
@@ -54,9 +58,10 @@ class CharacterDescriptionTableViewCell: UITableViewCell {
 extension CharacterDescriptionTableViewCell {
     
     // MARK: - Интерфейс
-    func configure(characterName: String, characterStatus: String) -> Void {
+    func configure(characterName: String, characterStatus: String, imageUrl: URL?) -> Void {
         self.setUpCharacterName(name: characterName)
         self.setUpCharacterState(state: characterStatus)
+        self.setUpAvatar(url: imageUrl)
     }
     
     func stopActivityIndicator() -> Void {
@@ -64,8 +69,21 @@ extension CharacterDescriptionTableViewCell {
     }
     
     // MARK: Установка аватара
-    func setUpAvatar(image: UIImage?) -> Void {
-        self.avatarImageView.image = image
+    private func setUpAvatar(url: URL?) -> Void {
+        
+        if let cachedImage = self.imageCache.fetchImage(url: url) {
+            self.avatarImageView.image = cachedImage
+            self.stopActivityIndicator()
+        } else {
+            self.networkManager.fetchImage(url: url, task: &self.dataTaskForImageDownload) { image in
+                if let image {
+                    self.avatarImageView.image = image
+                    self.stopActivityIndicator()
+                    self.imageCache.saveImage(url: url, image: image)
+                }
+            }
+        }
+        
     }
     
     // MARK: Установка имени персонажа

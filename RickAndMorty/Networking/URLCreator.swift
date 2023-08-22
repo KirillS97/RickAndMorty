@@ -17,12 +17,13 @@ struct URLCreator {
     private let apiPath = "/api"
     private let charactersPath = "/character"
     
-    func getAllCharactersURL() -> URL? {
+    func getCharactersForPageURL(pageNumber: Int) -> URL? {
         guard let baseURL else { return nil }
         var urlComponents = URLComponents(url: baseURL, resolvingAgainstBaseURL: false)
         urlComponents?.path.append(contentsOf: self.apiPath)
         urlComponents?.path.append(contentsOf: self.charactersPath)
+        let queryItem = URLQueryItem(name: "page", value: String(pageNumber))
+        urlComponents?.queryItems = [queryItem]
         return urlComponents?.url
     }
-    
 }

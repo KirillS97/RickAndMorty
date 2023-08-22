@@ -122,7 +122,7 @@ extension OriginTableViewCell {
         self.horizontalStack.spacing = 16
         self.horizontalStack.alignment = .center
         self.horizontalStack.layer.cornerRadius = 16
-        self.horizontalStack.backgroundColor = UIColor(red: (38/255), green: (42/255), blue: (56/255), alpha: 1)
+        self.horizontalStack.backgroundColor = AppColors.cellsColor.getColor()
         self.addConstraintsToHorizontalStack()
     }
     

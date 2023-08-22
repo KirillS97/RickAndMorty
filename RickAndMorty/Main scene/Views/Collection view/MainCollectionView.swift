@@ -11,6 +11,19 @@ class MainCollectionView: UICollectionView {
     
     
     
+    // MARK: UICollectionViewFlowLayout
+    private var customizedFlowLayout: UICollectionViewFlowLayout = {
+        let flowLayout = UICollectionViewFlowLayout()
+        flowLayout.minimumLineSpacing = 16
+        flowLayout.minimumInteritemSpacing = flowLayout.minimumLineSpacing
+        flowLayout.scrollDirection = .vertical
+        flowLayout.estimatedItemSize = CGSize(width: 156, height: 240)
+        flowLayout.sectionInset = .init(top: 16, left: 16, bottom: 16, right: 16)
+        return flowLayout
+    }()
+    
+    
+    
     // MARK: Инициализаторы
     init(frame: CGRect) {
         super.init(frame: frame, collectionViewLayout: self.customizedFlowLayout)
@@ -20,19 +33,6 @@ class MainCollectionView: UICollectionView {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    
-    
-    // MARK: UICollectionViewFlowLayout
-    private var customizedFlowLayout: UICollectionViewFlowLayout = {
-        let flowLayout = UICollectionViewFlowLayout()
-        flowLayout.minimumLineSpacing = 16
-        flowLayout.minimumInteritemSpacing = flowLayout.minimumLineSpacing
-        flowLayout.scrollDirection = .vertical
-        flowLayout.estimatedItemSize = UICollectionViewFlowLayout.automaticSize
-        flowLayout.sectionInset = .init(top: 16, left: 16, bottom: 16, right: 16)
-        return flowLayout
-    }()
     
     
     

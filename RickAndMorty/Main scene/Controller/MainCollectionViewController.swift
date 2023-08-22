@@ -24,6 +24,9 @@ class MainCollectionViewController: UIViewController {
     let networkManager = NetworkManager.shared
     let urlCreator = URLCreator.shared
     
+    var pageForLoad = 1
+    var pagesNumber = 1
+    
     var mainView: MainView!
     
     // MARK: loadView
@@ -43,26 +46,29 @@ class MainCollectionViewController: UIViewController {
         self.navigationItem.largeTitleDisplayMode = .always
         self.navigationController?.navigationBar.barStyle = .black
         self.navigationItem.backButtonTitle = ""
+        self.navigationController?.navigationBar.tintColor = .white
         
-        self.fetchAllCharacters()
+        self.fetchCharactersForPage()
     }
     
     
     
     // MARK: Метод отправки запроса на сервер для получения массива персонажей
-    private func fetchAllCharacters() -> Void {
-        self.networkManager.fetchAllCharacters(url: urlCreator.getAllCharactersURL(),
-                                               characters: self.characters,
-                                               completionHandler: { result in
+    private func fetchCharactersForPage() -> Void {
+        let url = self.urlCreator.getCharactersForPageURL(pageNumber: self.pageForLoad)
+        self.networkManager.fetchCharacters(url: url) { result in
             switch result {
-            case .success(let charactersArray):
-                self.characters = charactersArray
+            case .success(let data):
+                if self.pagesNumber != data.info.pages {
+                    self.pagesNumber = data.info.pages
+                }
+                self.characters.append(contentsOf: data.results)
+                self.pageForLoad += 1
             case .failure(_):
-                self.mainView.hideContent()
+                print("Error")
             }
-        })
+        }
     }
-    
     
     
     // MARK: Настройка mainView
@@ -95,23 +101,27 @@ extension MainCollectionViewController: UICollectionViewDataSource {
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CharacterViewCell.reuseId, for: indexPath)
-        if let characterViewCell = cell as? CharacterViewCell {
-            cell.prepareForReuse()
+        if let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CharacterViewCell.reuseId, for: indexPath) as? CharacterViewCell {
             if self.characters.indices.contains(indexPath.item) {
-                characterViewCell.setUpName(name: self.characters[indexPath.item].name)
                 let imageUrl = URL(string: self.characters[indexPath.item].image)
-                self.networkManager.fetchImage(url: imageUrl) { image in
-                    if let image {
-                        characterViewCell.setUpAvatar(image: image)
-                        characterViewCell.stopActivityIndicator()
-                    }
-                }
-                return characterViewCell
+                let characterName = self.characters[indexPath.item].name
+                cell.configure(characterName: characterName, imageUrl: imageUrl)
+                return cell
             }
         }
-        return cell
+        return UICollectionViewCell()
     }
+    
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        guard self.characters.indices.contains(indexPath.item) else { return }
+        if indexPath.item == self.characters.index(before: self.characters.endIndex) {
+            if self.pageForLoad <= self.pagesNumber {
+                self.fetchCharactersForPage()
+            }
+        }
+    }
+    
+    
 }
 
 

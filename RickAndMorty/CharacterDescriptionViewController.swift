@@ -145,13 +145,9 @@ extension CharacterDescriptionViewController: UITableViewDataSource {
         switch indexPath.section {
         case 0:
             let cell = CharacterDescriptionTableViewCell()
-            cell.configure(characterName: self.character.name, characterStatus: self.character.status)
-            netwokManager.fetchImage(url: URL(string: self.character.image)) { image in
-                if let image {
-                    cell.setUpAvatar(image: image)
-                    cell.stopActivityIndicator()
-                }
-            }
+            cell.configure(characterName: self.character.name,
+                           characterStatus: self.character.status,
+                           imageUrl: URL(string: self.character.image))
             return cell
         case 1:
             let cell = InfoTableViewCell()
